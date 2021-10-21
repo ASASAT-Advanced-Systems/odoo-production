@@ -1,0 +1,98 @@
+version: "2"
+
+services:
+  odoo:
+    container_name: odoo
+    image: odoo:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      # DB parameters 
+      - HOST=db
+      - USER=odoo
+      # --------------------------------------------------------------------------------
+      # Generate a password by encoding any phrase 
+      # that you like into base64 for more security, 
+      # using the following command:
+      # echo "<your chosen phrase>" | base64
+      # --------------------------------------------------------------------------------
+      - PASSWORD=/s]5P3-V{YxAr7xM
+    networks: 
+      # Backend Local Network
+      - odoo-db
+      # Frontend Local Network
+      - odoo-web
+    volumes:
+      # local addons
+      - ../odoo/odoo-<CLIENT>:/mnt/extra-addons
+      # enterprise modules
+      - ../odoo/enterprise:/mnt/enterprise
+      # config file
+      - ../odoo/config:/etc/odoo
+      # log file
+      - ../logs/odoo:/var/log/odoo/
+      # filestore:
+      - odoo-web-data:/var/lib/odoo
+
+  db:
+    container_name: odoo_db
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      # The same password that is generated for 
+      # encoding a specific phrase that you chose
+      - POSTGRES_PASSWORD=b2Rvby1yYWllcy1kYgo=
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks: 
+      # Backend Local Network
+      - odoo-db  
+    volumes:
+      # psql filestore
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+      # psql log file
+      - ../logs/postgresql:/var/log/postgresql
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: unless-stopped
+    depends_on: 
+      - odoo
+    ports:
+      # HTTP port
+      - 80:80
+      # HTTPS port
+      - 443:443
+    networks: 
+      # Frontend Local Network
+      - odoo-web  
+    volumes:
+      # nginx config file
+      - ./nginx:/etc/nginx/conf.d
+      # nginx log file
+      - ../logs/nginx:/var/log/nginx
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot:latest
+    command: certonly --webroot -w /var/www/html --rsa-key-size 4096 --noninteractive --email admin@asasatas.com.sa --agree-tos --no-eff-email -d <SERVER_NAME>
+    volumes:
+      # certificates files
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      # website config files
+      - ./ssl/certbot/www:/var/www/html
+      # certbot log file
+      - ../logs/certbot:/var/log/letsencrypt
+
+
+networks:
+  odoo-backend:
+  odoo-web:   
+
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:

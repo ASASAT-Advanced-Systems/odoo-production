@@ -1,0 +1,33 @@
+version: "2"
+
+services:
+  nginx-ssl: 
+    extends:
+      file: ../docker-compose.yml
+      service: nginx
+    container_name: nginx-ssl  
+    volumes:
+      # nginx config file
+      - ./nginx/config:/etc/nginx/conf.d
+      # To generate DH params for more security, run the dhparams-gen script 
+      - ./nginx/params:/etc/letsencrypt_conf
+      # nginx log file
+      - ../../logs/nginx:/var/log/nginx
+      # certificates files
+      - ./certbot/config:/etc/letsencrypt
+      # website config files
+      - ./certbot/www:/var/www/html
+
+  certbot-ssl:
+    extends:
+      file: ../docker-compose.yml
+      service: certbot
+    container_name: certbot-ssl  
+    command: renew --no-random-sleep-on-renew
+    volumes:
+      # certificates files
+      - ./certbot/conf:/etc/letsencrypt
+      # website config files
+      - ./certbot/www:/var/www/html
+      # certbot log file
+      - ../../logs/certbot:/var/log/letsencrypt
