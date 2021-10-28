@@ -5,8 +5,11 @@ k8s/
 enterprise/
 odoo-<CLIENT>/
 backups/
+
 # certificate files
 certbot/
+
+# Secrets
 *.pem
 
 # Byte-compiled / optimized / DLL files

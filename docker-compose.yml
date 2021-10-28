@@ -1,4 +1,4 @@
-version: "2"
+version: "3.1"
 
 services:
   odoo:
@@ -11,13 +11,7 @@ services:
       # DB parameters 
       - HOST=db
       - USER=odoo
-      # --------------------------------------------------------------------------------
-      # Generate a password by encoding any phrase 
-      # that you like into base64 for more security, 
-      # using the following command:
-      # echo "<your chosen phrase>" | base64
-      # --------------------------------------------------------------------------------
-      - PASSWORD=/s]5P3-V{YxAr7xM
+      - PASSWORD_FILE=/run/secrets/postgresql_password
     networks: 
       # Backend Local Network
       - odoo-db
@@ -34,6 +28,8 @@ services:
       - ../logs/odoo:/var/log/odoo/
       # filestore:
       - odoo-web-data:/var/lib/odoo
+    secrets:
+      - postgresql_password  
 
   db:
     container_name: odoo_db
@@ -42,9 +38,7 @@ services:
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=odoo
-      # The same password that is generated for 
-      # encoding a specific phrase that you chose
-      - POSTGRES_PASSWORD=b2Rvby1yYWllcy1kYgo=
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgresql_password
       - PGDATA=/var/lib/postgresql/data/pgdata
     networks: 
       # Backend Local Network
@@ -54,6 +48,8 @@ services:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
       # psql log file
       - ../logs/postgresql:/var/log/postgresql
+    secrets:
+      - postgresql_password  
 
   nginx:
     container_name: nginx
@@ -96,3 +92,8 @@ networks:
 volumes:
   odoo-web-data:
   odoo-db-data:
+
+
+secrets:
+  postgresql_password:
+    file: ./config/odoo_pg_pass.pem
