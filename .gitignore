@@ -1,10 +1,8 @@
 *.log
-secret.yaml
-k8s/
 .env
 enterprise/
 odoo-<CLIENT>/
-backups/
+*.zip
 
 # certificate files
 certbot/

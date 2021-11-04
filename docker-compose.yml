@@ -1,4 +1,4 @@
-version: "3.1"
+version: "2"
 
 services:
   odoo:
@@ -11,7 +11,7 @@ services:
       # DB parameters 
       - HOST=db
       - USER=odoo
-      - PASSWORD_FILE=/run/secrets/postgresql_password
+      - PASSWORD=${PSQL_PASSWORD}
     networks: 
       # Backend Local Network
       - odoo-db
@@ -19,17 +19,15 @@ services:
       - odoo-web
     volumes:
       # local addons
-      - ../odoo/odoo-<CLIENT>:/mnt/extra-addons
+      - ./odoo-almashriq:/mnt/extra-addons
       # enterprise modules
-      - ../odoo/enterprise:/mnt/enterprise
+      - ./enterprise:/mnt/enterprise
       # config file
-      - ../odoo/config:/etc/odoo
+      - ./config:/etc/odoo
       # log file
-      - ../logs/odoo:/var/log/odoo/
+      - ./logs/odoo:/var/log/odoo/
       # filestore:
       - odoo-web-data:/var/lib/odoo
-    secrets:
-      - postgresql_password  
 
   db:
     container_name: odoo_db
@@ -38,7 +36,7 @@ services:
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=odoo
-      - POSTGRES_PASSWORD_FILE=/run/secrets/postgresql_password
+      - POSTGRES_PASSWORD=${PSQL_PASSWORD}
       - PGDATA=/var/lib/postgresql/data/pgdata
     networks: 
       # Backend Local Network
@@ -47,13 +45,47 @@ services:
       # psql filestore
       - odoo-db-data:/var/lib/postgresql/data/pgdata
       # psql log file
-      - ../logs/postgresql:/var/log/postgresql
-    secrets:
-      - postgresql_password  
+      - ./logs/postgresql:/var/log/postgresql
 
   nginx:
     container_name: nginx
     image: nginx:latest
+    restart: unless-stopped
+    depends_on: 
+      - odoo
+    ports:
+      # HTTP port
+      - 80:80
+    networks: 
+      # Frontend Local Network
+      - odoo-web  
+    volumes:
+      # nginx log file
+      - ./logs/nginx:/var/log/nginx
+      # nginx config file
+      - ./nginx:/etc/nginx/conf.d
+      # certificates files
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      # website config files
+      - ./ssl/certbot/www:/var/www/html  
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot:latest
+    command: certonly --webroot -w /var/www/html --rsa-key-size 4096 --noninteractive --email admin@asasatas.com.sa --agree-tos --no-eff-email -d <CLIENT DOMAIN>
+    depends_on: 
+      - nginx
+    volumes:
+      # certificates files
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      # website config files
+      - ./ssl/certbot/www:/var/www/html
+      # certbot log file
+      - ./logs/certbot:/var/log/letsencrypt
+
+  nginx-ssl:
+    container_name: nginx-ssl 
+    image: nginx:latest 
     restart: unless-stopped
     depends_on: 
       - odoo
@@ -66,34 +98,37 @@ services:
       # Frontend Local Network
       - odoo-web  
     volumes:
-      # nginx config file
-      - ./nginx:/etc/nginx/conf.d
       # nginx log file
-      - ../logs/nginx:/var/log/nginx
+      - ./logs/nginx:/var/log/nginx
+      # certificates files
+      - ./ssl/certbot/conf:/etc/letsencrypt
+      # website config files
+      - ./ssl/certbot/www:/var/www/html    
+      # nginx config file
+      - ./ssl/nginx:/etc/nginx/conf.d
+      # To generate DH params for more security, run the dhparams-gen script 
+      - ./ssl/params:/etc/letsencrypt_conf
 
-  certbot:
-    container_name: certbot
-    image: certbot/certbot:latest
-    command: certonly --webroot -w /var/www/html --rsa-key-size 4096 --noninteractive --email admin@asasatas.com.sa --agree-tos --no-eff-email -d <SERVER_NAME>
+  certbot-ssl:
+    container_name: certbot-ssl 
+    image: certbot/certbot:latest 
+    command: renew --no-random-sleep-on-renew
+    depends_on: 
+      - nginx-ssl
     volumes:
+      # certbot log file
+      - ./logs/certbot:/var/log/letsencrypt
       # certificates files
       - ./ssl/certbot/conf:/etc/letsencrypt
       # website config files
       - ./ssl/certbot/www:/var/www/html
-      # certbot log file
-      - ../logs/certbot:/var/log/letsencrypt
 
 
 networks:
-  odoo-backend:
+  odoo-db:
   odoo-web:   
 
 
 volumes:
   odoo-web-data:
   odoo-db-data:
-
-
-secrets:
-  postgresql_password:
-    file: ./config/odoo_pg_pass.pem
