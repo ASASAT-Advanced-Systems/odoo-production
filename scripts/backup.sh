@@ -2,9 +2,10 @@
 
 # Variable
 backupDir=
+clientWebsite=
 odooDatabase=
 adminPassword=
-backupCommand="curl -X POST -F “master_pwd=${adminPassword}” -F “name=${odooDatabase}” -F “backup_format=zip” -o ${backupDir}/${odooDatabase}.$(date +%F-%H-%M).zip https://${CLIENT-WEBSITE}/web/database/backup" 
+backupCommand="curl -X POST -F “master_pwd=${adminPassword}” -F “name=${odooDatabase}” -F “backup_format=zip” -o ${backupDir}/${odooDatabase}.$(date +%F-%H-%M).zip https://${clientWebsite}/web/database/backup" 
 deleteOldBackups="find ${backupDir} -type f -mtime +30 -name “${odooDatabase}.*.zip” -delete"
 
 # Make a default directory for backup
@@ -14,7 +15,7 @@ mkdir -p ${backupDir}
 crontab -l > backup_cron
 
 # Echo new cron into cron file
-echo "15 2 * * Sat ${backupCommand} && ${deleteOldBackups}" >> backup_cron
+echo "15 2 * * * ${backupCommand} && ${deleteOldBackups}" >> backup_cron
 # Cron Line Explaination
 # * * * * * "command to be executed"
 # - - - - -
@@ -28,8 +29,3 @@ echo "15 2 * * Sat ${backupCommand} && ${deleteOldBackups}" >> backup_cron
 # Install new cron file
 crontab backup_cron
 rm backup_cron
-
-# -------------------------------------------------------------------------
-# To run this file, type the following command in the terminal:
-# - chmod +x /root/prod-almashriq/ssl/scripts/backup-cron.sh
-# -------------------------------------------------------------------------

@@ -4,13 +4,9 @@ from passlib.context import CryptContext
 
 
 def main():
-	PATH = os.path.join(__file__.replace(__file__.split('/')[-1], ''), 'odoo.conf')
-	CURRENT_PATH = f"{__file__.split('/')[-2]}/{__file__.split('/')[-1]}"
-	DOTENV_PATH = os.path.join(__file__.replace(CURRENT_PATH, ''), '.env')
-
-	load_dotenv(dotenv_path=DOTENV_PATH)
+	load_dotenv(dotenv_path=__file__.replace(f"{__file__.split(os.path.sep)[-1]}{os.path.sep}{__file__.split(os.path.sep)[-2]}", ''))
 	ADMIN_PASSWORD = os.getenv('ADMIN_PASS')
-
+	PATH = os.path.join(os.getenv('PRODUCTION_DIR'), os.path.join('odoo', 'odoo.conf'))
 	CPU_CORES = 2
 	LOG_HANDLER = ':WARNING'
 

@@ -19,11 +19,11 @@ services:
       - odoo-web
     volumes:
       # local addons
-      - ./odoo-almashriq:/mnt/extra-addons
+      - ./${ADDONS_DIR}:/mnt/extra-addons
       # enterprise modules
       - ./enterprise:/mnt/enterprise
       # config file
-      - ./config:/etc/odoo
+      - ./odoo:/etc/odoo
       # log file
       - ./logs/odoo:/var/log/odoo/
       # filestore:
@@ -72,7 +72,7 @@ services:
   certbot:
     container_name: certbot
     image: certbot/certbot:latest
-    command: certonly --webroot -w /var/www/html --rsa-key-size 4096 --noninteractive --email admin@asasatas.com.sa --agree-tos --no-eff-email -d <CLIENT DOMAIN>
+    command: certonly --webroot -w /var/www/html --rsa-key-size 4096 --noninteractive --email admin@asasatas.com.sa --agree-tos --no-eff-email -d ${CLIENT_WEBSITE}
     depends_on: 
       - nginx
     volumes:

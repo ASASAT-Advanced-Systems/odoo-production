@@ -19,8 +19,3 @@ echo "10 2 * * * docker exec nginx-ssl nginx -s reload " >> renew_cron
 # Install new cron file
 crontab renew_cron
 rm renew_cron
-
-# -------------------------------------------------------------------------
-# To run this file, type the following command in the terminal:
-# - chmod +x /root/prod-almashriq/renew-cron.sh
-# -------------------------------------------------------------------------
