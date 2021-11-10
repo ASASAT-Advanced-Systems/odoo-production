@@ -18,10 +18,7 @@ services:
       # Frontend Local Network
       - odoo-web
     volumes:
-      # local addons
-      - ./${ADDONS_DIR}:/mnt/extra-addons
-      # enterprise modules
-      - ./enterprise:/mnt/enterprise
+      # addons here
       # config file
       - ./odoo:/etc/odoo
       # log file
@@ -65,9 +62,9 @@ services:
       # nginx config file
       - ./nginx:/etc/nginx/conf.d
       # certificates files
-      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/letsencrypt:/etc/letsencrypt
       # website config files
-      - ./ssl/certbot/www:/var/www/html  
+      - ./ssl/certbot/www/html:/var/www/html  
 
   certbot:
     container_name: certbot
@@ -77,11 +74,11 @@ services:
       - nginx
     volumes:
       # certificates files
-      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/letsencrypt:/etc/letsencrypt
       # website config files
-      - ./ssl/certbot/www:/var/www/html
+      - ./ssl/certbot/www/html:/var/www/html
       # certbot log file
-      - ./logs/certbot:/var/log/letsencrypt
+      - ./logs/letsencrypt:/var/log/letsencrypt
 
   nginx-ssl:
     container_name: nginx-ssl 
@@ -101,13 +98,13 @@ services:
       # nginx log file
       - ./logs/nginx:/var/log/nginx
       # certificates files
-      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/letsencrypt:/etc/letsencrypt
       # website config files
-      - ./ssl/certbot/www:/var/www/html    
+      - ./ssl/certbot/www/html:/var/www/html    
       # nginx config file
       - ./ssl/nginx:/etc/nginx/conf.d
       # To generate DH params for more security, run the dhparams-gen script 
-      - ./ssl/params:/etc/letsencrypt_conf
+      - ./ssl/letsencrypt:/etc/conf/letsencrypt
 
   certbot-ssl:
     container_name: certbot-ssl 
@@ -116,12 +113,12 @@ services:
     depends_on: 
       - nginx-ssl
     volumes:
-      # certbot log file
-      - ./logs/certbot:/var/log/letsencrypt
       # certificates files
-      - ./ssl/certbot/conf:/etc/letsencrypt
+      - ./ssl/certbot/letsencrypt:/etc/letsencrypt
       # website config files
-      - ./ssl/certbot/www:/var/www/html
+      - ./ssl/certbot/www/html:/var/www/html
+      # certbot log file
+      - ./logs/letsencrypt:/var/log/letsencrypt
 
 
 networks:

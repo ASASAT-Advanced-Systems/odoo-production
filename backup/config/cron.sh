@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Write out current crontab
-crontab -l > renew_cron
+crontab -l > backup_cron
 
 # Echo new cron into cron file
-echo "5 2 * * * cd /root/prod-almashriq && docker-compose up -d certbot-ssl" >> renew_cron
-echo "10 2 * * * docker exec nginx-ssl nginx -s reload " >> renew_cron
+echo "15 2 * * * $(pwd)/backup.sh" >> backup_cron
+
 # Cron Line Explaination
 # * * * * * "command to be executed"
 # - - - - -
@@ -17,5 +17,5 @@ echo "10 2 * * * docker exec nginx-ssl nginx -s reload " >> renew_cron
 # ------------- Minute (0 - 59)
 
 # Install new cron file
-crontab renew_cron
-rm renew_cron
+crontab backup_cron
+rm backup_cron

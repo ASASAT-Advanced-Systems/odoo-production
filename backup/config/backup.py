@@ -4,12 +4,13 @@ from passlib.context import CryptContext
 
 
 def main():
-	load_dotenv(dotenv_path=__file__.replace(f"{__file__.split(os.path.sep)[-1]}{os.path.sep}{__file__.split(os.path.sep)[-2]}", ''))
+	DOTENV_PATH = __file__.replace(f"{__file__.split(os.path.sep)[-3]}{os.path.sep}{__file__.split(os.path.sep)[-2]}{os.path.sep}{__file__.split(os.path.sep)[-1]}", '')
+	load_dotenv(dotenv_path=DOTENV_PATH)
 	ADMIN_PASSWORD = os.getenv('ADMIN_PASS')
 	ODOO_DB = os.getenv('PRODUCTION_DATABASE')
 	CLIENT_WEBSITE = os.getenv('CLIENT_WEBSITE')
-	BACKUP_DIR = os.path.join(os.getenv('PRODUCTION_DIR'), 'backups')
-	PATH = os.path.join(os.getenv('PRODUCTION_DIR'), 'backup.sh')
+	BACKUP_DIR = os.path.join(os.getenv('PRODUCTION_DIR'), 'backup')
+	PATH = os.path.join(BACKUP_DIR, 'backup.sh')
 
 	with open(PATH, 'r') as file:
 		content = file.read()	
